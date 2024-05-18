@@ -7,6 +7,8 @@ class PasswordChangeViewSet(viewsets.ViewSet):
     # Specify the permission classes and HTTP methods
     permission_classes = (permissions.IsAuthenticated,)  
     http_method_names = ['post']  # Allow only POST requests
+    # serializer_class = PasswordChangeSerializer
+
 
     # Define the action to handle POST requests
     def create(self, request, *args, **kwargs):

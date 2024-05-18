@@ -1,2 +1,6 @@
 from .register import RegisterSerializer
 from .login import LoginSerializer
+from .PasswordReset import PasswordResetSerializer
+from .SetNewPassword import SetNewPasswordSerializer
+from .ResendActivationLink import ResendActivationLinkSerializer
+from .adminlogin import AdminLoginSerializer
