@@ -87,4 +87,9 @@ local_settings.py
 
 .env
 .env.dev
+data
+daphne.sock
+daphne.sock.lock
+uwsgi_app.sock
+
 db.sqlite3

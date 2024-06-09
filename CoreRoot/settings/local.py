@@ -1,5 +1,5 @@
 from .base import *
-# DEBUG = True
+DEBUG= True
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))

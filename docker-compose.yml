@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.0.4
+    restart: always
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  db:
+    image: postgres:15
+    restart: always
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  web:
+    build: .
+    container_name: django_app
+    command: [ "./wait-for-it.sh", "db:5432", "--",
+        "uwsgi", "--ini","/code/config/uwsgi/uwsgi.ini"]
+    restart: always
+    volumes:
+      - .:/code
+#    ports:
+#      - "8000:8000"
+    env_file:
+      - ./.env.dev
+    environment:
+      - DJANGO_SETTINGS_MODULE=CoreRoot.settings.prod
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.23.1
+    restart: always
+    volumes:
+      - ./config/nginx:/etc/nginx/templates
+      - .:/code
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+
+
+  daphne:
+    build: .
+    working_dir: /code/
+    command: [ "./wait-for-it.sh", "db:5432", "--",
+               "daphne", "-u", "/code/daphne.sock",
+               "CoreRoot.asgi:application" ]
+    restart: always
+    volumes:
+      - .:/code
+    environment:
+      - DJANGO_SETTINGS_MODULE=CoreRoot.settings.prod
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
+      - redis
+#  celery:
+#    build: .
+#    restart: always
+#    container_name: celery_worker
+#    command: celery -A CoreRoot worker -l info
+#    volumes:
+#      - .:/code
+#    depends_on:
+#      - redis
+#      - db
+#    env_file:
+#      - ./.env.dev
+#    environment:
+#      - DJANGO_SETTINGS_MODULE=CoreRoot.settings.prod
+#      - REDIS_URL=redis://redis:6379/0
+#      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db:5432/postgres
+#
+#  celery_beat:
+#    build: .
+#    restart: always
+#    container_name: celery_beat
+#    command: celery -A CoreRoot beat -l info
+#    volumes:
+#      - .:/code
+#    depends_on:
+#      - redis
+#      - db
+#    env_file:
+#      - ./.env.dev
+#    environment:
+#      - DJANGO_SETTINGS_MODULE=CoreRoot.settings.prod
+#      - REDIS_URL=redis://redis:6379/0
+#      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db:5432/postgres
+#
+#  flower:
+#    build: .
+#    restart: always
+#    container_name: celery_flower
+#    command: 'celery -A CoreRoot flower --port=5555'
+#    ports:
+#      - "5555:5555"
+#    depends_on:
+#      - redis
+#      - db
+#    env_file:
+#      - ./.env.dev
+#    environment:
+#      - DJANGO_SETTINGS_MODULE=CoreRoot.settings.prod
+#      - CELERY_BROKER_URL=redis://redis:6379/0
+#      - CELERY_RESULT_BACKEND=db+postgresql://postgres:postgres@db:5432/postgres

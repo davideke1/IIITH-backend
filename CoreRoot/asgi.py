@@ -7,7 +7,7 @@ from channels.security.websocket import AllowedHostsOriginValidator
 # from core.jwt_auth_middleware import JWTAuthMiddleware
 
 # Set the default settings module
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE', 'CoreRoot.settings'))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'CoreRoot.settings')
 
 django_asgi_app = get_asgi_application()
 
