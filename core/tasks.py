@@ -19,7 +19,7 @@ def fetch_and_store_data():
     )
 
     for user in active_users:
-        url = f'https://api.thingspeak.com/channels/2550632/feeds.json?api_key={user.thinkspeak_api_key}&results=1'
+        url = f'https://api.thingspeak.com/channels/2392715/feeds.json?api_key={user.thinkspeak_api_key}&results=1'
         response = requests.get(url)
         logger.info(f"Fetching data for user {user.username}: {response.status_code}")
         if response.status_code == 200:
@@ -35,10 +35,10 @@ def fetch_and_store_data():
                             timestamp=timestamp,
                             defaults={
                                 'temperature': float(feed.get('field1', 0)),
-                                'humidity': float(feed.get('field2', 0)),
+                                'humidity': float(feed.get('field4', 0)),
                                 'PH': float(feed.get('field3', 0)),
-                                'tds': float(feed.get('field5', 0)),
-                                'do': float(feed.get('field4', 0)),
+                                'tds': float(feed.get('field2', 0)),
+                                'do': float(feed.get('field5', 0)),
                             }
                         )
                         logger.info(f"Data {'created' if created else 'updated'} for user {user.username} at {timestamp}")

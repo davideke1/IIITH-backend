@@ -3,6 +3,7 @@ DEBUG= True
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.2.136.64','172.26.224.67']
 # Database configuration
 DATABASES = {
     'default': {
